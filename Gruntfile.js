@@ -2,6 +2,7 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
+    clean: ['public/dist/main.js'],
     concat: {
       options: {
            separator: ';',
@@ -53,7 +54,8 @@ module.exports = function(grunt) {
         ],
         tasks: [
           'concat',
-          'uglify'
+          'uglify',
+          'clean'
         ]
       },
       css: {
@@ -77,6 +79,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-mocha-test');
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-nodemon');
+  grunt.loadNpmTasks('grunt-contrib-clean');
+
 
   grunt.registerTask('server-dev', function (target) {
     // Running nodejs in a different process and displaying output on the main console
@@ -112,16 +116,14 @@ module.exports = function(grunt) {
   ////////////////////////////////////////////////////
   // Main grunt tasks
   ////////////////////////////////////////////////////
-  grunt.registerTask('runServer', [
-    'npm-live', 'nodemon'
-  ]);
+
 
   grunt.registerTask('test', [
     'eslint', 'mochaTest'
   ]);
 
   grunt.registerTask('build', [
-    'concat', 'uglify', 'cssmin'
+    'concat', 'uglify', 'cssmin','clean'
   ]);
 
   grunt.registerTask('upload', function(n) {
