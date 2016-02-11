@@ -55,7 +55,6 @@ module.exports = function(grunt) {
         tasks: [
           'concat',
           'uglify',
-          'clean'
         ]
       },
       css: {
@@ -84,6 +83,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('server-dev', function (target) {
     // Running nodejs in a different process and displaying output on the main console
+    grunt.task.run([ 'clean' ]);
+    
     var nodemon = grunt.util.spawn({
       cmd: 'grunt',
       grunt: true,
@@ -91,7 +92,7 @@ module.exports = function(grunt) {
     });
     nodemon.stdout.pipe(process.stdout);
     nodemon.stderr.pipe(process.stderr);
-
+    
     grunt.task.run([ 'watch' ]);
   });
 
