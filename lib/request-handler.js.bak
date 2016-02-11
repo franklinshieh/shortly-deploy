@@ -28,7 +28,7 @@ exports.logoutUser = function(req, res) {
 };
 
 exports.fetchLinks = function(req, res) {
-    Link.find({}, function (err, results){
+    db.urls.find({}, function (err, results){
     if(err) console.log('Error fetching getting urls');
     res.send(200, results);
     });
@@ -42,7 +42,7 @@ exports.saveLink = function(req, res) {
     return res.send(404);
   }
 
-  Link.findOne({url:uri},function(err, found) {
+  new Link({ url: uri }).fetch().then(function(found) {
     if (found) {
       res.send(200, found.attributes);
     } else {
@@ -56,7 +56,8 @@ exports.saveLink = function(req, res) {
           title: title,
           baseUrl: req.headers.origin
         });
-        newLink.save(function(err) {
+        newLink.save().then(function(newLink) {
+          Links.add(newLink);
           res.send(200, newLink);
         });
       });
@@ -64,56 +65,59 @@ exports.saveLink = function(req, res) {
   });
 };
 
-
 exports.loginUser = function(req, res) {
   var username = req.body.username;
   var password = req.body.password;
- User.findOne({username:username},function (err, user) {
-    if (!user) {
-      console.log('Error while logging in user', err);
-      res.redirect('/login');
-    } else {
-      console.log('Found user is:', user);
-      user.comparePassword(password, function(match) {
-        if (match) {
-          util.createSession(req, res, user);
-        } else {
-          res.redirect('/login');
-        }
-      });
-    }
+
+  new User({ username: username })
+    .fetch()
+    .then(function(user) {
+      if (!user) {
+        res.redirect('/login');
+      } else {
+        user.comparePassword(password, function(match) {
+          if (match) {
+            util.createSession(req, res, user);
+          } else {
+            res.redirect('/login');
+          }
+        })
+      }
   });
 };
 
 exports.signupUser = function(req, res) {
   var username = req.body.username;
   var password = req.body.password;
-  User.findOne({username:username},function (err, user) {
-   if (!user) {
-     var newUser = new User({
-       username: username,
-       password: password
-     });
-     newUser.save(function(err) {
-         // Users.add(newUser);
-         console.log(newUser);
-         util.createSession(req, res, newUser);
-       });
-   } else {
-     console.log('Account already exists');
-     res.redirect('/signup');
-   }
-  });
+
+  new User({ username: username })
+    .fetch()
+    .then(function(user) {
+      if (!user) {
+        var newUser = new User({
+          username: username,
+          password: password
+        });
+        newUser.save()
+          .then(function(newUser) {
+            Users.add(newUser);
+            util.createSession(req, res, newUser);
+          });
+      } else {
+        console.log('Account already exists');
+        res.redirect('/signup');
+      }
+    });
 };
 
-
 exports.navToLink = function(req, res) {
-  Link.findOne({ code: req.params[0] }, function(err, link) {
+  new Link({ code: req.params[0] }).fetch().then(function(link) {
     if (!link) {
       res.redirect('/');
     } else {
-      link.visits +=1;
-      link.save(function(err) {
+      link.set({ visits: link.get('visits') + 1 })
+        .save()
+        .then(function() {
           return res.redirect(link.get('url'));
         });
     }
