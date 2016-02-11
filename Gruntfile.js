@@ -91,6 +91,16 @@ module.exports = function(grunt) {
     grunt.task.run([ 'watch' ]);
   });
 
+  grunt.registerTask('npm-live', function (target) {
+    // Running nodejs in a different process and displaying output on the main console
+    var npm = grunt.util.spawn({
+      cmd: 'npm',
+      args: 'install'
+    });
+    npm.stdout.pipe(process.stdout);
+    npm.stderr.pipe(process.stderr);
+  });
+
 
   grunt.registerTask('upload', function(n) {
     if (grunt.option('prod')) {
@@ -102,6 +112,9 @@ module.exports = function(grunt) {
   ////////////////////////////////////////////////////
   // Main grunt tasks
   ////////////////////////////////////////////////////
+  grunt.registerTask('runServer', [
+    'npm-live', 'nodemon'
+  ]);
 
   grunt.registerTask('test', [
     'eslint', 'mochaTest'
