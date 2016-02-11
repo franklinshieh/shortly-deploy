@@ -5,9 +5,9 @@ var Promise = require('bluebird');
 
 var Schema = mongoose.Schema;
 var urlSchema = new Schema({
-  id: { type: Number, required: true, unique: true },
+  // id: { type: Number, required: true, unique: true },
   url: { type: String, required: true, unique: true },
-  baseUrl: { type: String, required: true },
+  baseUrl: { type: String},
   code: String,
   title: String,
   created_at: Date,
@@ -17,6 +17,7 @@ urlSchema.pre('save', function(next) {
   var shasum = crypto.createHash('sha1');
   shasum.update(this.url);
   this.code = shasum.digest('hex').slice(0, 5);
+  next();
 });
 
 
